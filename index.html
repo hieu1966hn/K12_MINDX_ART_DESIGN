@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>MindX AI Consultant Platform</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    
+    <!-- Add Babel Standalone for JSX/TSX transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <style>
+      body {
+        font-family: 'Exo', sans-serif;
+      }
+      .chat-bubble-ai {
+        text-align: justify;
+      }
+
+      /* Light Theme Table Styles */
+      .chat-bubble-ai table {
+        border-collapse: collapse;
+        width: 100%;
+        margin-top: 1rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+      }
+      .chat-bubble-ai th, .chat-bubble-ai td {
+        border: 1px solid #d1d5db; /* border-gray-300 */
+        padding: 0.75rem;
+        text-align: left;
+      }
+      .chat-bubble-ai th {
+        background-color: #d1d5db; /* bg-gray-300 */
+        color: #111827; /* text-gray-900 */
+        font-weight: 600;
+      }
+       .chat-bubble-ai td {
+        color: #374151; /* text-gray-700 */
+      }
+
+      /* Dark Theme Table Styles */
+      @media (prefers-color-scheme: dark) {
+          .chat-bubble-ai th, .chat-bubble-ai td {
+            border: 1px solid #4a5568; /* border-gray-600 */
+          }
+          .chat-bubble-ai th {
+            background-color: #1f2937; /* bg-gray-800 */
+            color: #ffffff; /* text-white */
+          }
+           .chat-bubble-ai td {
+            color: #d1d5db; /* text-gray-300 */
+          }
+      }
+
+      .chat-bubble-ai ul, .chat-bubble-ai ol {
+        list-style-type: none;
+        padding-left: 0;
+      }
+    </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.0/",
+    "react/": "https://esm.sh/react@^19.1.0/",
+    "@google/genai": "https://esm.sh/@google/genai@^1.8.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="bg-white dark:bg-[#313131]">
+    <div id="root"></div>
+    <!-- Use text/babel for the script to enable transpilation -->
+    <script type="text/babel" data-type="module" src="/index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
