@@ -68,7 +68,10 @@ You must handle the following scenarios with tailored logic:
 ### 5. Tone & Formatting
 Use Markdown, **bolding**, and bullet points for maximum visual clarity.
 
-## 4. KNOWLEDGE BASE
+## 4. KNOWLEDGE BASE`
+
+
+export const KNOWLEDGE_BASE = `
 
 [START OF KNOWLEDGE BASE]
 
