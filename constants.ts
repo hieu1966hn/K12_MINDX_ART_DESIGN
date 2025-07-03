@@ -1,6 +1,6 @@
 
 
-export const SYSTEM_PROMPT = `
+export const SYSTEM_INSTRUCTIONS = `
 # GEMINI APP BUILDER PROMPT
 
 ## 1. PERSONA
