@@ -1,7 +1,10 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { AiIcon, SendIcon, UserIcon } from './components/Icons.tsx';
 import { Message, MessageAuthor } from './types.ts';
-import { sendMessageToGeminiStream, parseMarkdown } from './services/geminiService.ts';
-import { AiIcon, UserIcon, SendIcon } from './components/Icons.tsx';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { parseMarkdown, sendMessageToGeminiStream } from './services/geminiService.ts';
+
+import logoDark from './image/logo-mindx-dark.png'
+import logoLight from './image/logo-mindx-light.png'
 
 const suggestionRegex = /\[([^\]]+)\]/g;
 
@@ -152,8 +155,8 @@ export default function App(): React.ReactElement {
     <div className="bg-white dark:bg-[#313131] text-gray-900 dark:text-white h-screen flex flex-col">
       <header className="bg-gray-100/80 dark:bg-gray-800/50 backdrop-blur-sm p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-4 shadow-md">
         <div className="flex-shrink-0">
-          <img src="/image/logo-mindx-dark.png" alt="MindX Logo" className="h-10 block dark:hidden" />
-          <img src="/image/logo-mindx-light.png" alt="MindX Logo" className="h-10 hidden dark:block" />
+          <img src={logoDark} alt="MindX Logo" className="h-10 block dark:hidden" />
+          <img src={logoLight} alt="MindX Logo" className="h-10 hidden dark:block" />
         </div>
         <div>
           <h1 className="text-xl font-bold">K12 Roadmaps - Q&A</h1>
