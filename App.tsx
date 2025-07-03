@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { Chat } from '@google/genai';
 import { Message, MessageAuthor } from './types.ts';
-import { createChatSession, parseMarkdown } from './services/geminiService.ts';
+import { sendMessageToGeminiStream, parseMarkdown } from './services/geminiService.ts';
 import { AiIcon, UserIcon, SendIcon } from './components/Icons.tsx';
 
 const suggestionRegex = /\[([^\]]+)\]/g;
@@ -14,7 +13,14 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
   const isUser = message.author === MessageAuthor.USER;
   const isSystem = message.author === MessageAuthor.SYSTEM;
   
-  const bubbleContent = parseMarkdown(message.content);
+  const [parsedContentHtml, setParsedContentHtml] = useState('');
+
+  useEffect(() => {
+    parseMarkdown(message.content).then(html => {
+        setParsedContentHtml(html);
+    });
+  }, [message.content]);
+
 
   if (isSystem) {
     return (
@@ -33,7 +39,7 @@ const ChatBubble: React.FC<ChatBubbleProps> = ({ message }) => {
             ? 'bg-blue-600 text-white rounded-br-none'
             : 'bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200 rounded-bl-none chat-bubble-ai'
         }`}
-        dangerouslySetInnerHTML={{ __html: bubbleContent }}
+        dangerouslySetInnerHTML={{ __html: parsedContentHtml }}
       />
       {isUser && <UserIcon />}
     </div>
@@ -64,39 +70,31 @@ const SuggestedActions: React.FC<SuggestedActionsProps> = ({ suggestions, onClic
 
 // Main App Component
 export default function App(): React.ReactElement {
-  const [chat, setChat] = useState<Chat | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const chatContainerRef = useRef<HTMLDivElement>(null);
 
-  const initializeChat = useCallback(async () => {
-    try {
-      const chatSession = createChatSession();
-      setChat(chatSession);
+  const initializeChat = useCallback(() => {
+    setIsLoading(true);
+    
+    const initialGreeting = `Chào bạn, MindX có 3 lộ trình học chính là Lộ trình Coding & AI, Lộ trình Robotics, và Lộ trình Art & Design. Để MindX có thể tư vấn tốt nhất, bạn cho mình hỏi bé có sở thích đặc biệt với lĩnh vực nào không ạ?
 
-      const stream = await chatSession.sendMessageStream({ message: "Bắt đầu cuộc trò chuyện." });
-      let responseText = '';
-      const aiMessageId = `ai-${Date.now()}`;
-      setMessages(prev => [...prev, { id: aiMessageId, author: MessageAuthor.AI, content: '' }]);
-
-      for await (const chunk of stream) {
-        responseText += chunk.text;
-        setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: responseText } : m));
-      }
-    } catch (error) {
-      console.error("Initialization failed:", error);
-      const errorMessage = "Rất tiếc, đã có lỗi xảy ra khi kết nối với AI. Vui lòng kiểm tra API key và thử lại.";
-      setMessages(prev => [...prev, { id: `err-${Date.now()}`, author: MessageAuthor.SYSTEM, content: errorMessage }]);
-    } finally {
-      setIsLoading(false);
-    }
+[Lộ trình Coding & AI] [Lộ trình Robotics] [Lộ trình Art & Design]`;
+    
+    setMessages([
+        {
+          id: `ai-initial-${Date.now()}`,
+          author: MessageAuthor.AI,
+          content: initialGreeting,
+        },
+      ]);
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
     initializeChat();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [initializeChat]);
 
   useEffect(() => {
     chatContainerRef.current?.scrollTo({
@@ -106,30 +104,41 @@ export default function App(): React.ReactElement {
   }, [messages, isLoading]);
 
   const handleSendMessage = async (messageText: string) => {
-    if (!messageText.trim() || isLoading || !chat) return;
+    if (!messageText.trim() || isLoading) return;
 
     const userMessage: Message = {
       id: `user-${Date.now()}`,
       author: MessageAuthor.USER,
       content: messageText,
     };
-    setMessages(prev => [...prev, userMessage]);
+    
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
     setInput('');
     setIsLoading(true);
 
     try {
-      const stream = await chat.sendMessageStream({ message: messageText });
+      const history = messages;
+      const result = await sendMessageToGeminiStream(history, messageText);
+      
       let responseText = '';
       const aiMessageId = `ai-${Date.now()}`;
+      
       setMessages(prev => [...prev, { id: aiMessageId, author: MessageAuthor.AI, content: '' }]);
 
-      for await (const chunk of stream) {
+      for await (const chunk of result) {
         responseText += chunk.text;
         setMessages(prev => prev.map(m => m.id === aiMessageId ? { ...m, content: responseText } : m));
       }
     } catch (error) {
       console.error("Error sending message:", error);
-      const errorMessage = "Xin lỗi, đã có chút sự cố. Bạn có thể thử lại được không?";
+      let errorMessage = "Xin lỗi, đã có chút sự cố. Bạn có thể thử lại được không?";
+      
+      const errorString = String(error);
+      if (errorString.includes("429") || errorString.includes("RESOURCE_EXHAUSTED")) {
+        errorMessage = "Rất tiếc, ứng dụng đã tạm thời vượt quá hạn mức truy cập API của Google Gemini. Điều này thường xảy ra với các khoá API dùng thử hoặc miễn phí. Vui lòng kiểm tra lại gói cước và thông tin thanh toán trên tài khoản Google AI của bạn để tiếp tục sử dụng.";
+      }
+
       setMessages(prev => [...prev, { id: `err-${Date.now()}`, author: MessageAuthor.SYSTEM, content: errorMessage }]);
     } finally {
       setIsLoading(false);
@@ -142,12 +151,13 @@ export default function App(): React.ReactElement {
   return (
     <div className="bg-white dark:bg-[#313131] text-gray-900 dark:text-white h-screen flex flex-col">
       <header className="bg-gray-100/80 dark:bg-gray-800/50 backdrop-blur-sm p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-4 shadow-md">
-        <div className="w-12 h-12 rounded-full bg-[#E31F26] flex items-center justify-center flex-shrink-0 text-white font-bold text-2xl">
-          M
+        <div className="flex-shrink-0">
+          <img src="/image/logo-mindx-dark.png" alt="MindX Logo" className="h-10 block dark:hidden" />
+          <img src="/image/logo-mindx-light.png" alt="MindX Logo" className="h-10 hidden dark:block" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">Nền tảng Tư vấn Art & Design</h1>
-          <p className="text-sm text-gray-500 dark:text-gray-400">Trường học Công nghệ MindX</p>
+          <h1 className="text-xl font-bold">K12 Roadmaps - Q&A</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Trường học Công nghệ MindX</p>
         </div>
       </header>
 
@@ -203,4 +213,4 @@ export default function App(): React.ReactElement {
       </footer>
     </div>
   );
-};
+}
