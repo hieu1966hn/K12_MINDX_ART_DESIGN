@@ -1,10 +1,7 @@
-import { AiIcon, SendIcon, UserIcon } from './components/Icons.tsx';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Message, MessageAuthor } from './types.ts';
-import React, { useCallback, useEffect, useRef, useState } from 'react';
-import { parseMarkdown, sendMessageToGeminiStream } from './services/geminiService.ts';
-
-import logoDark from './image/logo-mindx-dark.png'
-import logoLight from './image/logo-mindx-light.png'
+import { sendMessageToGeminiStream, parseMarkdown } from './services/geminiService.ts';
+import { AiIcon, UserIcon, SendIcon } from './components/Icons.tsx';
 
 const suggestionRegex = /\[([^\]]+)\]/g;
 
@@ -81,8 +78,14 @@ export default function App(): React.ReactElement {
   const initializeChat = useCallback(() => {
     setIsLoading(true);
     
-    const initialGreeting = `Chào bạn, MindX có 3 lộ trình học chính là Lộ trình Coding & AI, Lộ trình Robotics, và Lộ trình Art & Design. Để MindX có thể tư vấn tốt nhất, bạn cho mình hỏi bé có sở thích đặc biệt với lĩnh vực nào không ạ?
+    const initialGreeting = `Chào bạn! Tôi là Trợ lý AI của MindX, được thiết kế để giúp bạn tìm hiểu về các lộ trình học công nghệ cho lứa tuổi K12.
 
+Bạn có thể hỏi tôi về:
+*   **Thông tin các khóa học** trong 3 lộ trình chính.
+*   **So sánh chi tiết** giữa các khóa học để dễ dàng lựa chọn.
+*   **Nội dung cụ thể** của từng buổi học.
+
+Để bắt đầu, bạn quan tâm đến lộ trình nào nhất?
 [Lộ trình Coding & AI] [Lộ trình Robotics] [Lộ trình Art & Design]`;
     
     setMessages([
@@ -155,12 +158,12 @@ export default function App(): React.ReactElement {
     <div className="bg-white dark:bg-[#313131] text-gray-900 dark:text-white h-screen flex flex-col">
       <header className="bg-gray-100/80 dark:bg-gray-800/50 backdrop-blur-sm p-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-4 shadow-md">
         <div className="flex-shrink-0">
-          <img src={logoDark} alt="MindX Logo" className="h-10 block dark:hidden" />
-          <img src={logoLight} alt="MindX Logo" className="h-10 hidden dark:block" />
+          <img src="/image/logo-mindx-dark.png" alt="MindX Logo" className="h-10 block dark:hidden" />
+          <img src="/image/logo-mindx-light.png" alt="MindX Logo" className="h-10 hidden dark:block" />
         </div>
         <div>
-          <h1 className="text-xl font-bold">K12 Roadmaps - Q&A</h1>
-          <p className="text-sm text-gray-600 dark:text-gray-400">Trường học Công nghệ MindX</p>
+          <h1 className="text-xl font-bold">Trợ lý Tư vấn Lộ trình học K12</h1>
+          <p className="text-sm text-gray-600 dark:text-gray-400">Được hỗ trợ bởi AI từ MindX</p>
         </div>
       </header>
 
@@ -201,13 +204,13 @@ export default function App(): React.ReactElement {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder="Nhập câu hỏi của bạn ở đây..."
-              className="flex-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full py-3 px-5 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[#E31F26]"
+              className="flex-1 bg-gray-100 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-full py-3 px-5 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-[var(--mindx-red)]"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="bg-[#E31F26] text-white rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-90 transition-all"
+              className="bg-[var(--mindx-red)] text-white rounded-full p-3 disabled:opacity-50 disabled:cursor-not-allowed hover:brightness-90 transition-all"
             >
               <SendIcon />
             </button>

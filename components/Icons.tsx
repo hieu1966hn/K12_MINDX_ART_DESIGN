@@ -1,7 +1,7 @@
 import React from 'react';
 
 export const AiIcon: React.FC = () => (
-    <div className="w-10 h-10 rounded-full bg-[#E31F26] flex items-center justify-center flex-shrink-0">
+    <div className="w-10 h-10 rounded-full bg-[var(--mindx-red)] flex items-center justify-center flex-shrink-0">
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M12 8V4H8" />
             <rect x="4" y="12" width="16" height="8" rx="2" />
